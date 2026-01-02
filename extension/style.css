@@ -2,9 +2,16 @@
   position: absolute;
   margin-left: 6px;
   cursor: pointer;
-  color: #3f51b5;
-  font-size: 14px;
+  width: 16px;
+  height: 16px;
+  opacity: 0.8;
+  transition: opacity 0.2s, transform 0.2s;
   user-select: none;
+}
+
+.form-guidance-icon:hover {
+  opacity: 1;
+  transform: scale(1.1);
 }
 
 .form-guidance-tooltip {
@@ -19,7 +26,28 @@
   z-index: 9999;
   display: none;
   max-width: 320px;
+  max-height: 300px;
+  overflow-y: auto;
   box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  margin-top: 4px;
+}
+
+.form-guidance-tooltip::-webkit-scrollbar {
+  width: 6px;
+}
+
+.form-guidance-tooltip::-webkit-scrollbar-track {
+  background: #333;
+  border-radius: 3px;
+}
+
+.form-guidance-tooltip::-webkit-scrollbar-thumb {
+  background: #666;
+  border-radius: 3px;
+}
+
+.form-guidance-tooltip::-webkit-scrollbar-thumb:hover {
+  background: #888;
 }
 
 .form-guidance-tooltip .fg-expl { font-weight: 600; margin-bottom: 4px; }

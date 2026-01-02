@@ -55,18 +55,40 @@ function attachHelp(el, guidance) {
   el.parentNode.insertBefore(wrapper, el);
   wrapper.appendChild(el);
 
-  const icon = document.createElement("span");
+  const icon = document.createElement("img");
   icon.className = "form-guidance-icon";
-  icon.textContent = "ⓘ";
+  icon.src = chrome.runtime.getURL("icons/icon16.png");
+  icon.alt = "FormSaathi Help";
   wrapper.appendChild(icon);
 
   const tip = createTooltip(guidance);
   wrapper.appendChild(tip);
 
-  icon.addEventListener("mouseenter", () => tip.style.display = "block");
-  icon.addEventListener("mouseleave", () => tip.style.display = "none");
-  icon.addEventListener("click", () => {
-    tip.style.display = tip.style.display === "block" ? "none" : "block";
+  let hideTimeout;
+  
+  const showTip = () => {
+    clearTimeout(hideTimeout);
+    tip.style.display = "block";
+  };
+  
+  const hideTip = () => {
+    hideTimeout = setTimeout(() => {
+      tip.style.display = "none";
+    }, 200);
+  };
+  
+  icon.addEventListener("mouseenter", showTip);
+  icon.addEventListener("mouseleave", hideTip);
+  tip.addEventListener("mouseenter", showTip);
+  tip.addEventListener("mouseleave", hideTip);
+  
+  icon.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (tip.style.display === "block") {
+      tip.style.display = "none";
+    } else {
+      tip.style.display = "block";
+    }
   });
 }
 
