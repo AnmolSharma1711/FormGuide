@@ -57,6 +57,8 @@ function createTooltip(guidance) {
 function attachHelp(el, guidance) {
   if (el.dataset.guidanceAttached) return;
   el.dataset.guidanceAttached = "1";
+  
+  console.log("🟢 Attaching icon to:", el.tagName, el.name, el.id);
 
   // Position icon inline to the right of the field
   const icon = document.createElement("img");
@@ -73,6 +75,8 @@ function attachHelp(el, guidance) {
   } else {
     el.parentNode.appendChild(icon);
   }
+  
+  console.log("✅ Icon inserted successfully");
 
   const tip = createTooltip(guidance);
   document.body.appendChild(tip);
@@ -136,6 +140,8 @@ async function explainField(el) {
     return;
   }
   
+  console.log("🟢 Processing:", el.tagName, el.type, el.name, el.id, "visible:", el.offsetParent !== null);
+  
   // Skip password fields and sensitive fields early
   if (el.type === "password" || 
       el.type === "submit" || 
@@ -196,8 +202,12 @@ async function explainField(el) {
 }
 
 function init() {
+  console.log("🟢 FormSaathi: Starting...");
+  
   isExtensionEnabled().then(enabled => {
     if (!enabled) return; // Don't run if extension is disabled
+    
+    console.log("🟢 FormSaathi: Scanning for fields...");
     
     // Process existing fields
     document.querySelectorAll("input, select, textarea").forEach(el => {
