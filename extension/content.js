@@ -49,11 +49,6 @@ function createTooltip(guidance) {
 function attachHelp(el, guidance) {
   if (el.dataset.guidanceAttached) return;
   el.dataset.guidanceAttached = "1";
-  
-  // Skip checkboxes and radio buttons - they don't need guidance
-  if (el.type === "checkbox" || el.type === "radio" || el.type === "submit" || el.type === "button") {
-    return;
-  }
 
   const wrapper = document.createElement("span");
   wrapper.style.position = "relative";
