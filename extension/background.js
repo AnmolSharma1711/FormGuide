@@ -1,5 +1,5 @@
-// Production backend URL - update after deployment
-const BACKEND_URL = "https://your-app.vercel.app/guidance"; // Replace with your deployed URL
+// Production backend URL
+const BACKEND_URL = "https://form-guide.vercel.app/guidance";
 // For local testing, use: "http://localhost:3000/guidance"
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
