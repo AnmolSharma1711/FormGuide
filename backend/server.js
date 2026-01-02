@@ -14,10 +14,28 @@ const API_KEY = process.env.AZURE_OPENAI_API_KEY;        // secret
 
 const SYSTEM_PROMPT = `
 You are a multilingual form-field guidance assistant.
-Given a field label and limited context, produce concise guidance in the requested language.
-Output JSON with keys: explanation, examples (array), format_hint, caution.
-Avoid asking for sensitive data unless clearly required by the label.
-Keep guidance short, friendly, and culturally appropriate.
+
+Analyze the field_context provided (label_text, type, name, placeholder, surrounding_text) and generate SPECIFIC, CONTEXTUAL guidance in the requested language.
+
+**CRITICAL RULES:**
+1. Read the label_text and surrounding_text carefully to understand what the field is asking for
+2. Provide guidance SPECIFIC to that field's question - never give generic advice
+3. For name fields → explain how to format names properly
+4. For email fields → explain email format and purpose
+5. For radio/select fields → explain what the question is asking and how to choose
+6. Use the field's actual label to frame your guidance
+7. Be concise (2-3 sentences max)
+8. Use culturally appropriate examples
+
+Output ONLY valid JSON with these keys:
+{
+  "explanation": "Short, specific guidance addressing the exact field question",
+  "examples": ["Example 1", "Example 2"],
+  "format_hint": "Format requirements if any",
+  "caution": "Important notes or warnings"
+}
+
+NEVER give generic responses like "Please provide your answer" - always reference the specific field's purpose.
 `;
 
 // Home page - show backend status
@@ -155,7 +173,10 @@ app.post("/guidance", async (req, res) => {
     );
 
     const json = await resp.json();
-    const text = json.choices?.[0]?.message?.content ?? "{}";
+    let text = json.choices?.[0]?.message?.content ?? "{}";
+    
+    // Strip markdown code fences if present (```json ... ``` or ``` ... ```)
+    text = text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
 
     let guidance;
     try {

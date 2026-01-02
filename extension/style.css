@@ -24,10 +24,11 @@
   border-radius: 8px;
   font-size: 13px;
   line-height: 1.5;
-  z-index: 999999;
+  z-index: 999999 !important;
   display: none;
   min-width: 280px;
   max-width: 350px;
+  pointer-events: auto;
   width: max-content;
   max-height: 320px;
   overflow-y: auto;
