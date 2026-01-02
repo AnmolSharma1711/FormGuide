@@ -18,6 +18,24 @@ async function isExtensionEnabled() {
   });
 }
 
+function isTrulyVisible(el) {
+  // Check if element is visible
+  if (!el.offsetParent) return false;
+  
+  // Check if element has meaningful dimensions
+  const rect = el.getBoundingClientRect();
+  if (rect.width < 10 || rect.height < 10) return false;
+  
+  // Check computed style
+  const style = window.getComputedStyle(el);
+  if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') return false;
+  
+  // Check if element is actually in viewport or has real dimensions
+  if (rect.width === 0 && rect.height === 0) return false;
+  
+  return true;
+}
+
 function getFieldCacheKey(el) {
   // Create unique key for caching based on field properties
   const tag = el.tagName.toLowerCase();
@@ -230,7 +248,7 @@ function init() {
     // Process existing fields (native + Angular Material)
     const selectors = "input, select, textarea, mat-select, [role='combobox'], [role='listbox']";
     document.querySelectorAll(selectors).forEach(el => {
-      if (!el.dataset.guidanceAttached && el.offsetParent !== null) {
+      if (!el.dataset.guidanceAttached && isTrulyVisible(el)) {
         explainField(el);
       }
     });
@@ -242,7 +260,7 @@ function init() {
       timeout = setTimeout(() => {
         const selectors = "input, select, textarea, mat-select, [role='combobox'], [role='listbox']";
         document.querySelectorAll(selectors).forEach(el => {
-          if (!el.dataset.guidanceAttached) {
+          if (!el.dataset.guidanceAttached && isTrulyVisible(el)) {
             explainField(el);
           }
         });
@@ -261,7 +279,7 @@ function init() {
           const allFields = document.querySelectorAll(selectors);
           
           allFields.forEach(el => {
-            if (!el.dataset.guidanceAttached && el.offsetParent !== null) {
+            if (!el.dataset.guidanceAttached && isTrulyVisible(el)) {
               explainField(el);
             }
           });
