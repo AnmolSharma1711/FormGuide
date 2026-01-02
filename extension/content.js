@@ -187,9 +187,7 @@ async function explainField(el) {
       el.type === "submit" || 
       el.type === "button" ||
       el.name?.toLowerCase().includes("password") ||
-      el.name?.toLowerCase().includes("remember") ||
-      el.id?.toLowerCase().includes("password") ||
-      el.id?.toLowerCase().includes("remember")) {
+      el.id?.toLowerCase().includes("password")) {
     el.dataset.guidanceAttached = "1"; // Mark but don't process
     return;
   }
