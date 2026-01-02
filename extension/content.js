@@ -34,11 +34,24 @@ function isTrulyVisible(el) {
   // For checkboxes/radios, check if they have a visible label instead
   // (actual checkbox inputs are often hidden with styled replacements)
   if (isCheckbox) {
+    console.log('🔍 Checking checkbox visibility:', {
+      id: el.id || '(no id)',
+      name: el.name || '(no name)',
+      inDocument: document.body.contains(el),
+      disabled: el.disabled
+    });
+    
     // Check if checkbox is in the document
-    if (!document.body.contains(el)) return false;
+    if (!document.body.contains(el)) {
+      console.log('❌ Not in document');
+      return false;
+    }
     
     // Check if it's disabled
-    if (el.disabled) return false;
+    if (el.disabled) {
+      console.log('❌ Disabled');
+      return false;
+    }
     
     // Look for associated label or nearby text
     let hasVisibleLabel = false;
@@ -46,6 +59,7 @@ function isTrulyVisible(el) {
     // Method 1: Check for <label> with matching 'for' attribute
     if (el.id) {
       const label = document.querySelector(`label[for="${el.id}"]`);
+      console.log('Method 1 (label[for]):', label ? 'found' : 'not found', label?.offsetParent);
       if (label && label.offsetParent !== null) {
         hasVisibleLabel = true;
       }
@@ -54,19 +68,43 @@ function isTrulyVisible(el) {
     // Method 2: Check if wrapped in a label
     if (!hasVisibleLabel) {
       const parentLabel = el.closest('label');
+      console.log('Method 2 (closest label):', parentLabel ? 'found' : 'not found', parentLabel?.offsetParent);
       if (parentLabel && parentLabel.offsetParent !== null) {
         hasVisibleLabel = true;
       }
     }
     
-    // Method 3: Check nearby elements for text (common pattern: checkbox + span with text)
+    // Method 3: Look up the DOM tree for visible parent with text
+    // (checkbox and immediate parent might be hidden, but grandparent+ is visible)
     if (!hasVisibleLabel && el.parentElement) {
-      const parent = el.parentElement;
-      if (parent.offsetParent !== null && parent.textContent.trim().length > 0) {
-        hasVisibleLabel = true;
+      let current = el.parentElement;
+      let depth = 0;
+      const maxDepth = 5; // Check up to 5 levels up
+      
+      while (current && depth < maxDepth) {
+        const hasText = current.textContent.trim().length > 10; // At least 10 chars
+        const isVisible = current.offsetParent !== null;
+        
+        console.log(`Method 3 (depth ${depth}):`, {
+          tag: current.tagName,
+          offsetParent: current.offsetParent,
+          hasText: hasText,
+          textLength: current.textContent.trim().length,
+          textPreview: current.textContent.trim().substring(0, 60)
+        });
+        
+        if (isVisible && hasText) {
+          console.log(`✅ Found visible parent at depth ${depth}`);
+          hasVisibleLabel = true;
+          break;
+        }
+        
+        current = current.parentElement;
+        depth++;
       }
     }
     
+    console.log(hasVisibleLabel ? '✅ Checkbox has visible label' : '❌ No visible label found');
     return hasVisibleLabel;
   }
   
@@ -136,7 +174,24 @@ function attachHelp(el, guidance) {
   if (el.dataset.guidanceAttached) return;
   el.dataset.guidanceAttached = "1";
   
-  console.log("🟢 Attaching icon to:", el.tagName, el.name, el.id);
+  console.log("🟢 Attaching icon to:", el.tagName, el.type, el.name, el.id);
+
+  // For checkboxes/radios, find visible parent to attach icon to
+  let targetElement = el;
+  if (el.type === 'checkbox' || el.type === 'radio') {
+    // Find the visible parent element (label or container)
+    let current = el.parentElement;
+    let depth = 0;
+    while (current && depth < 5) {
+      if (current.offsetParent !== null && current.textContent.trim().length > 10) {
+        targetElement = current;
+        console.log(`📍 Using visible parent at depth ${depth} for checkbox icon`);
+        break;
+      }
+      current = current.parentElement;
+      depth++;
+    }
+  }
 
   // Position icon inline with better spacing
   const icon = document.createElement("img");
@@ -151,11 +206,17 @@ function attachHelp(el, guidance) {
   icon.style.position = "relative";
   icon.style.zIndex = "1000";
   
-  // Insert icon as next sibling (not wrapped)
-  if (el.nextSibling) {
-    el.parentNode.insertBefore(icon, el.nextSibling);
+  // Insert icon as next sibling (or inside for checkboxes)
+  if (targetElement === el) {
+    // Normal field - insert after element
+    if (el.nextSibling) {
+      el.parentNode.insertBefore(icon, el.nextSibling);
+    } else {
+      el.parentNode.appendChild(icon);
+    }
   } else {
-    el.parentNode.appendChild(icon);
+    // Checkbox/radio - append to visible parent container
+    targetElement.appendChild(icon);
   }
   
   console.log("✅ Icon inserted successfully");
@@ -314,6 +375,11 @@ function init() {
       timeout = setTimeout(() => {
         const selectors = "input, select, textarea, mat-select, [role='combobox'], [role='listbox']";
         document.querySelectorAll(selectors).forEach(el => {
+          // Debug logging for checkboxes
+          if (el.type === 'checkbox') {
+            console.log("🔍 [MutationObserver] Found checkbox:", el.name, el.id, "already attached?", el.dataset.guidanceAttached, "visible?", isTrulyVisible(el));
+          }
+          
           if (!el.dataset.guidanceAttached && isTrulyVisible(el)) {
             explainField(el);
           }
