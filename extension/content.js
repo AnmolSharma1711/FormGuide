@@ -238,15 +238,15 @@ function init() {
     // Also check on visibility changes (for tabs/modals)
     document.addEventListener('click', () => {
       setTimeout(() => {
-        consolselectors = "input, select, textarea, mat-select, [role='combobox'], [role='listbox']";
+        console.log("🔍 Click detected, re-scanning ALL fields...");
+        const selectors = "input, select, textarea, mat-select, [role='combobox'], [role='listbox']";
         const allFields = document.querySelectorAll(selectors);
         console.log(`🔍 Total fields found: ${allFields.length}`);
         
         allFields.forEach(el => {
           if (!el.dataset.guidanceAttached) {
             const isVisible = el.offsetParent !== null;
-            console.log("🆕 Found unprocessed field:", el.tagName, el.type || el.rol
-            console.log("🆕 Found unprocessed field:", el.tagName, el.type || '', el.name, el.id, "visible:", isVisible);
+            console.log("🆕 Found unprocessed field:", el.tagName, el.type || el.role || '', el.name, el.id, "visible:", isVisible);
             if (isVisible) {
               explainField(el);
             }
