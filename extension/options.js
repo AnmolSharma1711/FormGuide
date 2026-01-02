@@ -36,7 +36,7 @@ function showStatus(message, type) {
 // About link
 document.getElementById("about").addEventListener("click", (e) => {
   e.preventDefault();
-  const info = `Form Field Explainer v1.0.0\n\nThis extension provides AI-powered, multilingual guidance for form fields across the web.\n\nFeatures:\n• Real-time form field assistance\n• Support for 19+ languages\n• Powered by Azure OpenAI\n• Privacy-focused design`;
+  const info = `FormSaathi v1.0.0\n\nYour AI companion for form filling - provides intelligent, multilingual guidance for every field.\n\nFeatures:\n• Real-time form field assistance\n• Support for 19+ languages\n• Powered by Azure OpenAI\n• Privacy-focused design`;
   alert(info);
 });
 

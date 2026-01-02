@@ -1,6 +1,8 @@
-# 📝 FormGuide - AI-Powered Multilingual Form Assistant
+# 📝 FormSaathi - Your AI Companion for Smart Form Filling
 
 An intelligent browser extension that provides real-time, AI-generated guidance for form fields in 19+ languages using Azure OpenAI.
+
+**FormSaathi** (साथी means "companion" in Hindi) - Your trusted companion for filling forms correctly and confidently.
 
 ## 🌟 Features
 
