@@ -11,10 +11,5 @@
       "src": "/guidance",
       "dest": "server.js"
     }
-  ],
-  "env": {
-    "AZURE_OPENAI_ENDPOINT": "@azure_openai_endpoint",
-    "AZURE_OPENAI_DEPLOYMENT": "@azure_openai_deployment",
-    "AZURE_OPENAI_API_KEY": "@azure_openai_api_key"
-  }
+  ]
 }
