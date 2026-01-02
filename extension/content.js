@@ -91,21 +91,30 @@ function attachHelp(el, guidance) {
   
   const showTip = () => {
     clearTimeout(hideTimeout);
-    // Position tooltip relative to icon (prefer above to avoid conflicts)
-    const iconRect = icon.getBoundingClientRect();
-    const tipRect = tip.getBoundingClientRect();
     
-    // Try to position above first
+    // Force reflow to ensure icon is properly positioned
+    icon.offsetHeight;
+    
+    // Get fresh position of icon
+    const iconRect = icon.getBoundingClientRect();
+    
+    // Show tooltip temporarily to get its dimensions
+    tip.style.display = "block";
+    tip.style.visibility = "hidden"; // Hide while positioning
+    const tipRect = tip.getBoundingClientRect();
+    tip.style.visibility = "visible";
+    
+    // Try to position above the icon first
     let top = iconRect.top + window.scrollY - tipRect.height - 10;
     let left = iconRect.left + window.scrollX;
     
-    // If goes off top, position below instead
-    if (top < window.scrollY) {
+    // If goes off top of screen, position below instead
+    if (top < window.scrollY + 10) {
       top = iconRect.bottom + window.scrollY + 10;
     }
     
-    // Check if tooltip goes off screen right edge
-    if (left + tipRect.width > window.innerWidth) {
+    // Adjust horizontal position if goes off screen
+    if (left + tipRect.width > window.innerWidth - 10) {
       left = window.innerWidth - tipRect.width - 10;
     }
     
@@ -116,7 +125,6 @@ function attachHelp(el, guidance) {
     
     tip.style.top = `${top}px`;
     tip.style.left = `${left}px`;
-    tip.style.display = "block";
   };
   
   const hideTip = () => {
