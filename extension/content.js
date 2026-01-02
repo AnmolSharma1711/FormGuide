@@ -24,7 +24,9 @@ function isTrulyVisible(el) {
   
   // Check if element has meaningful dimensions
   const rect = el.getBoundingClientRect();
-  if (rect.width < 10 || rect.height < 10) return false;
+  // Allow smaller size for checkboxes and radio buttons
+  const minSize = (el.type === 'checkbox' || el.type === 'radio') ? 5 : 10;
+  if (rect.width < minSize || rect.height < minSize) return false;
   
   // Check computed style
   const style = window.getComputedStyle(el);
