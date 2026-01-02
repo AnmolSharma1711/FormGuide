@@ -45,6 +45,16 @@ function getSurroundingText(el) {
 }
 
 function createTooltip(guidance) {
+  // Parse if guidance is a string (shouldn't happen but just in case)
+  if (typeof guidance === 'string') {
+    try {
+      guidance = JSON.parse(guidance);
+    } catch (e) {
+      console.error("FormSaathi: Failed to parse guidance", e);
+      return document.createElement("div");
+    }
+  }
+  
   const tip = document.createElement("div");
   tip.className = "form-guidance-tooltip";
   tip.innerHTML = `
