@@ -20,7 +20,9 @@ async function isExtensionEnabled() {
 
 function getFieldCacheKey(el) {
   // Create unique key for caching based on field properties
-  return `${el.type || el.tagName}_${el.name || ''}_${el.id || ''}_${getLabelText(el)}`;
+  const tag = el.tagName.toLowerCase();
+  const type = el.type || el.getAttribute('role') || tag;
+  return `${type}_${el.name || ''}_${el.id || ''}_${getLabelText(el)}`;
 }
 
 function getLabelText(el) {
@@ -209,8 +211,9 @@ function init() {
     
     console.log("🟢 FormSaathi: Scanning for fields...");
     
-    // Process existing fields
-    document.querySelectorAll("input, select, textarea").forEach(el => {
+    // Process existing fields (native + Angular Material)
+    const selectors = "input, select, textarea, mat-select, [role='combobox'], [role='listbox']";
+    document.querySelectorAll(selectors).forEach(el => {
       if (!el.dataset.guidanceAttached) {
         explainField(el);
       }
@@ -221,7 +224,8 @@ function init() {
     const mo = new MutationObserver(() => {
       clearTimeout(timeout);
       timeout = setTimeout(() => {
-        document.querySelectorAll("input, select, textarea").forEach(el => {
+        const selectors = "input, select, textarea, mat-select, [role='combobox'], [role='listbox']";
+        document.querySelectorAll(selectors).forEach(el => {
           if (!el.dataset.guidanceAttached) {
             explainField(el);
           }
@@ -234,12 +238,21 @@ function init() {
     // Also check on visibility changes (for tabs/modals)
     document.addEventListener('click', () => {
       setTimeout(() => {
-        document.querySelectorAll("input, select, textarea").forEach(el => {
-          if (!el.dataset.guidanceAttached && el.offsetParent !== null) {
-            explainField(el);
+        consolselectors = "input, select, textarea, mat-select, [role='combobox'], [role='listbox']";
+        const allFields = document.querySelectorAll(selectors);
+        console.log(`🔍 Total fields found: ${allFields.length}`);
+        
+        allFields.forEach(el => {
+          if (!el.dataset.guidanceAttached) {
+            const isVisible = el.offsetParent !== null;
+            console.log("🆕 Found unprocessed field:", el.tagName, el.type || el.rol
+            console.log("🆕 Found unprocessed field:", el.tagName, el.type || '', el.name, el.id, "visible:", isVisible);
+            if (isVisible) {
+              explainField(el);
+            }
           }
         });
-      }, 200);
+      }, 800); // Longer delay for slow-loading content
     }, true);
   });
 }
