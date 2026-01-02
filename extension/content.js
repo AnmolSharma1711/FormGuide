@@ -104,14 +104,40 @@ function getFieldCacheKey(el) {
 }
 
 function getLabelText(el) {
+  // Google Forms specific: Look for aria-labelledby first
+  const ariaLabelledBy = el.getAttribute("aria-labelledby");
+  if (ariaLabelledBy) {
+    const labelElement = document.getElementById(ariaLabelledBy);
+    if (labelElement) {
+      const text = labelElement.innerText.trim();
+      if (text) return text;
+    }
+  }
+  
+  // Standard label with for attribute
   if (el.id) {
     const label = document.querySelector(`label[for="${el.id}"]`);
     if (label) return label.innerText.trim();
   }
+  
+  // aria-label attribute
   const aria = el.getAttribute("aria-label");
   if (aria) return aria.trim();
+  
+  // Parent label element
   const parentLabel = el.closest("label");
   if (parentLabel) return parentLabel.innerText.trim();
+  
+  // Google Forms: Look for question text in parent structure
+  const questionContainer = el.closest('div[role="listitem"], .freebirdFormviewerComponentsQuestionBaseRoot');
+  if (questionContainer) {
+    const heading = questionContainer.querySelector('[role="heading"], .freebirdFormviewerComponentsQuestionBaseTitle');
+    if (heading) {
+      const text = heading.innerText.trim();
+      if (text) return text;
+    }
+  }
+  
   return el.placeholder?.trim() || el.name || el.id || "";
 }
 
@@ -400,11 +426,12 @@ async function explainField(el) {
   
   console.log("🟢 FormSaathi: Making API request");
   
+  const labelText = getLabelText(el);
   const payload = {
     page_domain: DOMAIN,
     user_language,
     field_context: {
-      label_text: getLabelText(el),
+      label_text: labelText,
       placeholder: el.placeholder || "",
       name: el.name || "",
       id: el.id || "",
@@ -412,6 +439,8 @@ async function explainField(el) {
       surrounding_text: getSurroundingText(el)
     }
   };
+  
+  console.log("📤 Sending payload with label:", labelText);
   
   try {
     const guidance = await chrome.runtime.sendMessage({ type: "GET_GUIDANCE", payload });
