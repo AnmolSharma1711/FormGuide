@@ -1,4 +1,6 @@
 const DOMAIN = location.hostname;
+const guidanceCache = new Map(); // Cache API responses
+
 async function getUserLanguage() {
   return new Promise(resolve => {
     chrome.storage.sync.get(["user_language"], (data) => {
@@ -13,6 +15,11 @@ async function isExtensionEnabled() {
       resolve(data.extension_enabled !== false); // default to true
     });
   });
+}
+
+function getFieldCacheKey(el) {
+  // Create unique key for caching based on field properties
+  return `${el.type || el.tagName}_${el.name || ''}_${el.id || ''}_${getLabelText(el)}`;
 }
 
 function getLabelText(el) {
@@ -121,7 +128,19 @@ function attachHelp(el, guidance) {
 }
 
 async function explainField(el) {
+  // Skip if already processed
+  if (el.dataset.guidanceAttached) return;
+  
   const user_language = await getUserLanguage();
+  const cacheKey = `${user_language}_${getFieldCacheKey(el)}`;
+  
+  // Check cache first
+  if (guidanceCache.has(cacheKey)) {
+    console.log(`FormSaathi: Using cached guidance for field`);
+    attachHelp(el, guidanceCache.get(cacheKey));
+    return;
+  }
+  
   console.log(`FormSaathi: Processing field, language: ${user_language}`);
   
   const payload = {
@@ -138,12 +157,29 @@ async function explainField(el) {
   };
   
   console.log(`FormSaathi: Requesting guidance for:`, payload);
-  
-  const guidance = await chrome.runtime.sendMessage({ type: "GET_GUIDANCE", payload });
-  
-  console.log(`FormSaathi: Received guidance:`, guidance);
-  
-  if (guidance && guidance.explanation) attachHelp(el, guidance);
+  // Process existing fields
+    document.querySelectorAll("input, select, textarea").forEach(el => {
+      if (!el.dataset.guidanceAttached) {
+        explainField(el);
+      }
+    });
+    
+    // Watch for new fields (debounced)
+    let timeout;
+    const mo = new MutationObserver(() => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        document.querySelectorAll("input, select, textarea").forEach(el => {
+          if (!el.dataset.guidanceAttached) {
+            explainField(el);
+          }
+        });
+      }, 500); // Wait 500ms after last change
+  if (guidance && guidance.explanation) {
+    // Cache the response
+    guidanceCache.set(cacheKey, guidance);
+    attachHelp(el, guidance);
+  }
 }
 
 function init() {
