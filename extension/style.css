@@ -17,16 +17,14 @@
 }
 
 .form-guidance-tooltip {
-  position: absolute;
-  top: 100%;
-  left: 0;
+  position: fixed;
   background: #222;
   color: #fff;
   padding: 12px 14px;
   border-radius: 8px;
   font-size: 13px;
   line-height: 1.5;
-  z-index: 9999;
+  z-index: 999999;
   display: none;
   min-width: 280px;
   max-width: 350px;
@@ -35,6 +33,7 @@
   overflow-y: auto;
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   margin-top: 8px;
+  word-wrap: break-word;
 }
 
 .form-guidance-tooltip::-webkit-scrollbar {

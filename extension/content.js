@@ -74,12 +74,28 @@ function attachHelp(el, guidance) {
   wrapper.appendChild(icon);
 
   const tip = createTooltip(guidance);
-  wrapper.appendChild(tip);
+  document.body.appendChild(tip);
 
   let hideTimeout;
   
   const showTip = () => {
     clearTimeout(hideTimeout);
+    // Position tooltip relative to icon
+    const iconRect = icon.getBoundingClientRect();
+    tip.style.top = `${iconRect.bottom + window.scrollY + 5}px`;
+    tip.style.left = `${iconRect.left + window.scrollX}px`;
+    
+    // Check if tooltip goes off screen right edge
+    const tipRect = tip.getBoundingClientRect();
+    if (tipRect.right > window.innerWidth) {
+      tip.style.left = `${window.innerWidth - tipRect.width - 10}px`;
+    }
+    
+    // Check if tooltip goes off screen bottom
+    if (tipRect.bottom > window.innerHeight) {
+      tip.style.top = `${iconRect.top + window.scrollY - tipRect.height - 5}px`;
+    }
+    
     tip.style.display = "block";
   };
   
