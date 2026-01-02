@@ -49,6 +49,17 @@ function createTooltip(guidance) {
 function attachHelp(el, guidance) {
   if (el.dataset.guidanceAttached) return;
   el.dataset.guidanceAttached = "1";
+  
+  // Skip password fields and common login/security fields for privacy
+  if (el.type === "password" || 
+      el.type === "submit" || 
+      el.type === "button" ||
+      el.name?.toLowerCase().includes("password") ||
+      el.name?.toLowerCase().includes("remember") ||
+      el.id?.toLowerCase().includes("password") ||
+      el.id?.toLowerCase().includes("remember")) {
+    return;
+  }
 
   const wrapper = document.createElement("span");
   wrapper.style.position = "relative";
