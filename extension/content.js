@@ -62,16 +62,20 @@ function attachHelp(el, guidance) {
   
   console.log("🟢 Attaching icon to:", el.tagName, el.name, el.id);
 
-  // Position icon inline to the right of the field
+  // Position icon inline with better spacing
   const icon = document.createElement("img");
   icon.className = "form-guidance-icon";
   icon.src = chrome.runtime.getURL("icons/icon16.png");
   icon.alt = "FormSaathi Help";
-  icon.style.marginLeft = "8px";
+  icon.style.marginLeft = "6px";
+  icon.style.marginRight = "4px";
   icon.style.verticalAlign = "middle";
   icon.style.cursor = "pointer";
+  icon.style.display = "inline-block";
+  icon.style.position = "relative";
+  icon.style.zIndex = "1000";
   
-  // Insert icon right after the input field
+  // Insert icon as next sibling (not wrapped)
   if (el.nextSibling) {
     el.parentNode.insertBefore(icon, el.nextSibling);
   } else {
@@ -142,8 +146,6 @@ async function explainField(el) {
     return;
   }
   
-  console.log("🟢 Processing:", el.tagName, el.type, el.name, el.id, "visible:", el.offsetParent !== null);
-  
   // Skip password fields and sensitive fields early
   if (el.type === "password" || 
       el.type === "submit" || 
@@ -204,17 +206,13 @@ async function explainField(el) {
 }
 
 function init() {
-  console.log("🟢 FormSaathi: Starting...");
-  
   isExtensionEnabled().then(enabled => {
-    if (!enabled) return; // Don't run if extension is disabled
-    
-    console.log("🟢 FormSaathi: Scanning for fields...");
+    if (!enabled) return;
     
     // Process existing fields (native + Angular Material)
     const selectors = "input, select, textarea, mat-select, [role='combobox'], [role='listbox']";
     document.querySelectorAll(selectors).forEach(el => {
-      if (!el.dataset.guidanceAttached) {
+      if (!el.dataset.guidanceAttached && el.offsetParent !== null) {
         explainField(el);
       }
     });
