@@ -1,5 +1,6 @@
 const DOMAIN = location.hostname;
 const guidanceCache = new Map(); // Cache API responses
+const processingFields = new Set(); // Track fields being processed
 
 async function getUserLanguage() {
   return new Promise(resolve => {
@@ -128,20 +129,25 @@ function attachHelp(el, guidance) {
 }
 
 async function explainField(el) {
-  // Skip if already processed
+  // Skip if already processed or being processed
   if (el.dataset.guidanceAttached) return;
   
   const user_language = await getUserLanguage();
   const cacheKey = `${user_language}_${getFieldCacheKey(el)}`;
   
+  // Prevent duplicate processing
+  if (processingFields.has(cacheKey)) return;
+  processingFields.add(cacheKey);
+  
+  // Mark immediately to prevent reprocessing
+  el.dataset.guidanceAttached = "1";
+  
   // Check cache first
   if (guidanceCache.has(cacheKey)) {
-    console.log(`FormSaathi: Using cached guidance for field`);
     attachHelp(el, guidanceCache.get(cacheKey));
+    processingFields.delete(cacheKey);
     return;
   }
-  
-  console.log(`FormSaathi: Processing field, language: ${user_language}`);
   
   const payload = {
     page_domain: DOMAIN,
@@ -156,8 +162,26 @@ async function explainField(el) {
     }
   };
   
-  console.log(`FormSaathi: Requesting guidance for:`, payload);
-  // Process existing fields
+  try {
+    const guidance = await chrome.runtime.sendMessage({ type: "GET_GUIDANCE", payload });
+    
+    if (guidance && guidance.explanation) {
+      // Cache the response
+      guidanceCache.set(cacheKey, guidance);
+      attachHelp(el, guidance);
+    }
+  } catch (error) {
+    console.error("FormSaathi: Error getting guidance", error);
+  } finally {
+    processingFields.delete(cacheKey);
+  }
+}
+
+function init() {
+  isExtensionEnabled().then(enabled => {
+    if (!enabled) return; // Don't run if extension is disabled
+    
+    // Process existing fields
     document.querySelectorAll("input, select, textarea").forEach(el => {
       if (!el.dataset.guidanceAttached) {
         explainField(el);
@@ -175,23 +199,8 @@ async function explainField(el) {
           }
         });
       }, 500); // Wait 500ms after last change
-  if (guidance && guidance.explanation) {
-    // Cache the response
-    guidanceCache.set(cacheKey, guidance);
-    attachHelp(el, guidance);
-  }
-}
-
-function init() {
-  isExtensionEnabled().then(enabled => {
-    if (!enabled) return; // Don't run if extension is disabled
-    
-    document.querySelectorAll("input, select, textarea").forEach(el => explainField(el));
-    const mo = new MutationObserver(() => {
-      document.querySelectorAll("input, select, textarea").forEach(el => {
-        if (!el.dataset.guidanceAttached) explainField(el);
-      });
     });
+    
     mo.observe(document.body, { childList: true, subtree: true });
   });
 }
