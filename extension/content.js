@@ -29,20 +29,56 @@ async function isExtensionEnabled() {
 }
 
 function isTrulyVisible(el) {
-  // Check if element is visible
+  const isCheckbox = el.type === 'checkbox' || el.type === 'radio';
+  
+  // For checkboxes/radios, check if they have a visible label instead
+  // (actual checkbox inputs are often hidden with styled replacements)
+  if (isCheckbox) {
+    // Check if checkbox is in the document
+    if (!document.body.contains(el)) return false;
+    
+    // Check if it's disabled
+    if (el.disabled) return false;
+    
+    // Look for associated label or nearby text
+    let hasVisibleLabel = false;
+    
+    // Method 1: Check for <label> with matching 'for' attribute
+    if (el.id) {
+      const label = document.querySelector(`label[for="${el.id}"]`);
+      if (label && label.offsetParent !== null) {
+        hasVisibleLabel = true;
+      }
+    }
+    
+    // Method 2: Check if wrapped in a label
+    if (!hasVisibleLabel) {
+      const parentLabel = el.closest('label');
+      if (parentLabel && parentLabel.offsetParent !== null) {
+        hasVisibleLabel = true;
+      }
+    }
+    
+    // Method 3: Check nearby elements for text (common pattern: checkbox + span with text)
+    if (!hasVisibleLabel && el.parentElement) {
+      const parent = el.parentElement;
+      if (parent.offsetParent !== null && parent.textContent.trim().length > 0) {
+        hasVisibleLabel = true;
+      }
+    }
+    
+    return hasVisibleLabel;
+  }
+  
+  // For non-checkbox elements, use standard visibility checks
   if (!el.offsetParent) return false;
   
-  // Check if element has meaningful dimensions
   const rect = el.getBoundingClientRect();
-  // Allow smaller size for checkboxes and radio buttons
-  const minSize = (el.type === 'checkbox' || el.type === 'radio') ? 5 : 10;
-  if (rect.width < minSize || rect.height < minSize) return false;
+  if (rect.width < 10 || rect.height < 10) return false;
   
-  // Check computed style
   const style = window.getComputedStyle(el);
   if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') return false;
   
-  // Check if element is actually in viewport or has real dimensions
   if (rect.width === 0 && rect.height === 0) return false;
   
   return true;
