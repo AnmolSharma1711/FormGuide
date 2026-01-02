@@ -89,9 +89,9 @@ app.get("/", (req, res) => {
     <body>
       <div class="container">
         <h1>🤝 FormSaathi API</h1>
-        <div class="status">✅ Backend Running</div>
+        <div class="status">✅ Backend Running Successfully</div>
         <p class="info">
-          AI-powered multilingual form guidance API powered by Azure OpenAI
+          AI-powered multilingual form guidance API powered by Azure OpenAI GPT-4o mini
         </p>
         
         <div class="stats">
