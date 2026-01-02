@@ -3,11 +3,21 @@ const guidanceCache = new Map(); // Cache API responses
 const processingFields = new Set(); // Track fields being processed
 
 async function getUserLanguage() {
-  return new Promise(resolve => {
-    chrome.storage.sync.get(["user_language"], (data) => {
-      resolve(data.user_language || navigator.language || "en-US");
+  try {
+    return new Promise(resolve => {
+      chrome.storage.sync.get(["user_language"], (data) => {
+        if (chrome.runtime.lastError) {
+          console.log("FormSaathi: Extension context issue, using default language");
+          resolve(navigator.language || "en-US");
+          return;
+        }
+        resolve(data.user_language || navigator.language || "en-US");
+      });
     });
-  });
+  } catch (e) {
+    console.log("FormSaathi: Extension context invalidated, using default language");
+    return navigator.language || "en-US";
+  }
 }
 
 async function isExtensionEnabled() {
@@ -235,7 +245,10 @@ async function explainField(el) {
       attachHelp(el, guidance);
     }
   } catch (error) {
-    console.error("FormSaathi: Error", error);
+    // Extension context invalidated or other error - silently skip
+    if (error.message?.includes('Extension context invalidated')) {
+      console.log("FormSaathi: Extension reloaded, please refresh page");
+    }
   } finally {
     processingFields.delete(cacheKey);
   }
@@ -248,6 +261,11 @@ function init() {
     // Process existing fields (native + Angular Material)
     const selectors = "input, select, textarea, mat-select, [role='combobox'], [role='listbox']";
     document.querySelectorAll(selectors).forEach(el => {
+      // Debug logging for checkboxes
+      if (el.type === 'checkbox') {
+        console.log("🔍 Found checkbox:", el.name, el.id, "already attached?", el.dataset.guidanceAttached, "visible?", isTrulyVisible(el));
+      }
+      
       if (!el.dataset.guidanceAttached && isTrulyVisible(el)) {
         explainField(el);
       }
