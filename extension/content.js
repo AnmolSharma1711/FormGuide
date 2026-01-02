@@ -122,6 +122,8 @@ function attachHelp(el, guidance) {
 
 async function explainField(el) {
   const user_language = await getUserLanguage();
+  console.log(`FormSaathi: Processing field, language: ${user_language}`);
+  
   const payload = {
     page_domain: DOMAIN,
     user_language,
@@ -134,7 +136,13 @@ async function explainField(el) {
       surrounding_text: getSurroundingText(el)
     }
   };
+  
+  console.log(`FormSaathi: Requesting guidance for:`, payload);
+  
   const guidance = await chrome.runtime.sendMessage({ type: "GET_GUIDANCE", payload });
+  
+  console.log(`FormSaathi: Received guidance:`, guidance);
+  
   if (guidance && guidance.explanation) attachHelp(el, guidance);
 }
 
