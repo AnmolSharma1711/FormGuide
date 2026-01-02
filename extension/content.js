@@ -233,24 +233,22 @@ function init() {
     
     mo.observe(document.body, { childList: true, subtree: true, attributes: false });
     
-    // Also check on visibility changes (for tabs/modals)
-    document.addEventListener('click', () => {
-      setTimeout(() => {
-        console.log("🔍 Click detected, re-scanning ALL fields...");
-        const selectors = "input, select, textarea, mat-select, [role='combobox'], [role='listbox']";
-        const allFields = document.querySelectorAll(selectors);
-        console.log(`🔍 Total fields found: ${allFields.length}`);
-        
-        allFields.forEach(el => {
-          if (!el.dataset.guidanceAttached) {
-            const isVisible = el.offsetParent !== null;
-            console.log("🆕 Found unprocessed field:", el.tagName, el.type || el.role || '', el.name, el.id, "visible:", isVisible);
-            if (isVisible) {
+    // Rescan on meaningful events (buttons, tabs, links) - not all clicks
+    document.addEventListener('click', (e) => {
+      const target = e.target;
+      // Only rescan if clicking buttons, tabs, or navigation elements
+      if (target.matches('button, a, [role="tab"], [role="button"], mat-tab')) {
+        setTimeout(() => {
+          const selectors = "input, select, textarea, mat-select, [role='combobox'], [role='listbox']";
+          const allFields = document.querySelectorAll(selectors);
+          
+          allFields.forEach(el => {
+            if (!el.dataset.guidanceAttached && el.offsetParent !== null) {
               explainField(el);
             }
-          }
-        });
-      }, 800); // Longer delay for slow-loading content
+          });
+        }, 600);
+      }
     }, true);
   });
 }
