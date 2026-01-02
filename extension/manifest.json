@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Form Field Explainer",
+  "version": "1.0.0",
+  "description": "Shows guidance for each form field in the user's language.",
+  "permissions": ["storage", "scripting", "activeTab"],
+  "host_permissions": ["<all_urls>"],
+  "action": { "default_title": "Form Field Explainer", "default_popup": "options.html" },
+  "options_page": "options.html",
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["style.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}

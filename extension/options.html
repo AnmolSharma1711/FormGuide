@@ -1,0 +1,324 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Form Field Explainer - Settings</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      
+      .container {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 500px;
+        width: 100%;
+        overflow: hidden;
+      }
+      
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+      }
+      
+      .header h1 {
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      
+      .header p {
+        font-size: 14px;
+        opacity: 0.9;
+      }
+      
+      .icon {
+        font-size: 48px;
+        margin-bottom: 12px;
+      }
+      
+      .content {
+        padding: 30px;
+      }
+      
+      .form-group {
+        margin-bottom: 24px;
+      }
+      
+      label {
+        display: block;
+        font-weight: 600;
+        font-size: 14px;
+        color: #333;
+        margin-bottom: 8px;
+      }
+      
+      .description {
+        font-size: 12px;
+        color: #666;
+        margin-top: 4px;
+      }
+      
+      select {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 14px;
+        font-family: inherit;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+      
+      select:hover {
+        border-color: #667eea;
+      }
+      
+      select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+      
+      .toggle-group {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 24px;
+      }
+      
+      .toggle-info {
+        flex: 1;
+      }
+      
+      .toggle-info h3 {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 4px;
+      }
+      
+      .toggle-info p {
+        font-size: 12px;
+        color: #666;
+      }
+      
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 48px;
+        height: 26px;
+      }
+      
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 26px;
+      }
+      
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+      
+      input:checked + .slider {
+        background-color: #667eea;
+      }
+      
+      input:checked + .slider:before {
+        transform: translateX(22px);
+      }
+      
+      button {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      }
+      
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+      }
+      
+      button:active {
+        transform: translateY(0);
+      }
+      
+      .status {
+        margin-top: 16px;
+        padding: 12px;
+        border-radius: 8px;
+        text-align: center;
+        font-size: 14px;
+        font-weight: 500;
+        display: none;
+      }
+      
+      .status.success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      
+      .footer {
+        padding: 20px;
+        background: #f8f9fa;
+        text-align: center;
+        font-size: 12px;
+        color: #666;
+      }
+      
+      .footer a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+      }
+      
+      .features {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+      
+      .feature {
+        padding: 12px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        text-align: center;
+      }
+      
+      .feature-icon {
+        font-size: 24px;
+        margin-bottom: 4px;
+      }
+      
+      .feature-text {
+        font-size: 11px;
+        color: #666;
+        font-weight: 500;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="icon">📝</div>
+        <h1>Form Field Explainer</h1>
+        <p>AI-powered multilingual form guidance</p>
+      </div>
+      
+      <div class="content">
+        <div class="toggle-group">
+          <div class="toggle-info">
+            <h3>Enable Extension</h3>
+            <p>Show guidance on form fields</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="enabled" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        
+        <div class="form-group">
+          <label for="lang">Guidance Language</label>
+          <select id="lang">
+            <option value="en-US">🇬🇧 English (US)</option>
+            <option value="hi-IN">🇮🇳 हिंदी (Hindi)</option>
+            <option value="mr-IN">🇮🇳 मराठी (Marathi)</option>
+            <option value="bn-IN">🇮🇳 বাংলা (Bengali)</option>
+            <option value="ta-IN">🇮🇳 தமிழ் (Tamil)</option>
+            <option value="te-IN">🇮🇳 తెలుగు (Telugu)</option>
+            <option value="gu-IN">🇮🇳 ગુજરાતી (Gujarati)</option>
+            <option value="kn-IN">🇮🇳 ಕನ್ನಡ (Kannada)</option>
+            <option value="ml-IN">🇮🇳 മലയാളം (Malayalam)</option>
+            <option value="pa-IN">🇮🇳 ਪੰਜਾਬੀ (Punjabi)</option>
+            <option value="es-ES">🇪🇸 Español (Spanish)</option>
+            <option value="fr-FR">🇫🇷 Français (French)</option>
+            <option value="de-DE">🇩🇪 Deutsch (German)</option>
+            <option value="zh-CN">🇨🇳 中文 (Chinese)</option>
+            <option value="ja-JP">🇯🇵 日本語 (Japanese)</option>
+            <option value="ko-KR">🇰🇷 한국어 (Korean)</option>
+            <option value="ar-SA">🇸🇦 العربية (Arabic)</option>
+            <option value="pt-BR">🇧🇷 Português (Portuguese)</option>
+            <option value="ru-RU">🇷🇺 Русский (Russian)</option>
+          </select>
+          <div class="description">Choose your preferred language for form field guidance</div>
+        </div>
+        
+        <div class="features">
+          <div class="feature">
+            <div class="feature-icon">🤖</div>
+            <div class="feature-text">AI-Powered</div>
+          </div>
+          <div class="feature">
+            <div class="feature-icon">🌍</div>
+            <div class="feature-text">Multilingual</div>
+          </div>
+          <div class="feature">
+            <div class="feature-icon">⚡</div>
+            <div class="feature-text">Real-time</div>
+          </div>
+          <div class="feature">
+            <div class="feature-icon">🔒</div>
+            <div class="feature-text">Privacy First</div>
+          </div>
+        </div>
+        
+        <button id="save">💾 Save Settings</button>
+        <div class="status" id="status"></div>
+      </div>
+      
+      <div class="footer">
+        Powered by Azure AI • <a href="#" id="about">About</a>
+      </div>
+    </div>
+    <script src="options.js"></script>
+  </body>
+</html>
