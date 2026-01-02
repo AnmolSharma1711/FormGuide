@@ -20,6 +20,120 @@ Avoid asking for sensitive data unless clearly required by the label.
 Keep guidance short, friendly, and culturally appropriate.
 `;
 
+// Home page - show backend status
+app.get("/", (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>FormSaathi API</title>
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+        }
+        .container {
+          background: white;
+          border-radius: 16px;
+          padding: 40px;
+          max-width: 600px;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+          text-align: center;
+        }
+        h1 { color: #667eea; font-size: 36px; margin-bottom: 16px; }
+        .status { 
+          display: inline-block;
+          background: #d4edda;
+          color: #155724;
+          padding: 8px 16px;
+          border-radius: 20px;
+          font-weight: 600;
+          margin-bottom: 24px;
+        }
+        .info { color: #666; line-height: 1.6; margin-bottom: 24px; }
+        .endpoint {
+          background: #f8f9fa;
+          padding: 16px;
+          border-radius: 8px;
+          margin: 16px 0;
+          text-align: left;
+        }
+        .endpoint code {
+          background: #e9ecef;
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-family: monospace;
+        }
+        .footer { margin-top: 24px; color: #999; font-size: 14px; }
+        .stats {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 16px;
+          margin: 24px 0;
+        }
+        .stat {
+          background: #f8f9fa;
+          padding: 16px;
+          border-radius: 8px;
+        }
+        .stat-value { font-size: 24px; font-weight: 600; color: #667eea; }
+        .stat-label { font-size: 12px; color: #666; margin-top: 4px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>🤝 FormSaathi API</h1>
+        <div class="status">✅ Backend Running</div>
+        <p class="info">
+          AI-powered multilingual form guidance API powered by Azure OpenAI
+        </p>
+        
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-value">19+</div>
+            <div class="stat-label">Languages</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">GPT-4o</div>
+            <div class="stat-label">AI Model</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">Azure</div>
+            <div class="stat-label">Powered By</div>
+          </div>
+        </div>
+        
+        <div class="endpoint">
+          <strong>📡 API Endpoint:</strong><br>
+          <code>POST /guidance</code><br><br>
+          <strong>Request Body:</strong><br>
+          <pre style="text-align: left; overflow-x: auto;">
+{
+  "page_domain": "example.com",
+  "user_language": "hi-IN",
+  "field_context": {
+    "label_text": "Email",
+    "type": "email"
+  }
+}</pre>
+        </div>
+        
+        <div class="footer">
+          FormSaathi Backend • Version 1.0.0<br>
+          <a href="https://github.com/AnmolSharma1711/FormGuide" style="color: #667eea; text-decoration: none;">GitHub</a>
+        </div>
+      </div>
+    </body>
+    </html>
+  `);
+});
+
 app.post("/guidance", async (req, res) => {
   try {
     const { page_domain, user_language, field_context } = req.body;
