@@ -57,29 +57,22 @@ function createTooltip(guidance) {
 function attachHelp(el, guidance) {
   if (el.dataset.guidanceAttached) return;
   el.dataset.guidanceAttached = "1";
-  
-  // Skip password fields and common login/security fields for privacy
-  if (el.type === "password" || 
-      el.type === "submit" || 
-      el.type === "button" ||
-      el.name?.toLowerCase().includes("password") ||
-      el.name?.toLowerCase().includes("remember") ||
-      el.id?.toLowerCase().includes("password") ||
-      el.id?.toLowerCase().includes("remember")) {
-    return;
-  }
 
-  const wrapper = document.createElement("span");
-  wrapper.style.position = "relative";
-  wrapper.style.display = "inline-block";
-  el.parentNode.insertBefore(wrapper, el);
-  wrapper.appendChild(el);
-
+  // Position icon inline to the right of the field
   const icon = document.createElement("img");
   icon.className = "form-guidance-icon";
   icon.src = chrome.runtime.getURL("icons/icon16.png");
   icon.alt = "FormSaathi Help";
-  wrapper.appendChild(icon);
+  icon.style.marginLeft = "8px";
+  icon.style.verticalAlign = "middle";
+  icon.style.cursor = "pointer";
+  
+  // Insert icon right after the input field
+  if (el.nextSibling) {
+    el.parentNode.insertBefore(icon, el.nextSibling);
+  } else {
+    el.parentNode.appendChild(icon);
+  }
 
   const tip = createTooltip(guidance);
   document.body.appendChild(tip);
@@ -88,22 +81,31 @@ function attachHelp(el, guidance) {
   
   const showTip = () => {
     clearTimeout(hideTimeout);
-    // Position tooltip relative to icon
+    // Position tooltip relative to icon (prefer above to avoid conflicts)
     const iconRect = icon.getBoundingClientRect();
-    tip.style.top = `${iconRect.bottom + window.scrollY + 5}px`;
-    tip.style.left = `${iconRect.left + window.scrollX}px`;
+    const tipRect = tip.getBoundingClientRect();
+    
+    // Try to position above first
+    let top = iconRect.top + window.scrollY - tipRect.height - 10;
+    let left = iconRect.left + window.scrollX;
+    
+    // If goes off top, position below instead
+    if (top < window.scrollY) {
+      top = iconRect.bottom + window.scrollY + 10;
+    }
     
     // Check if tooltip goes off screen right edge
-    const tipRect = tip.getBoundingClientRect();
-    if (tipRect.right > window.innerWidth) {
-      tip.style.left = `${window.innerWidth - tipRect.width - 10}px`;
+    if (left + tipRect.width > window.innerWidth) {
+      left = window.innerWidth - tipRect.width - 10;
     }
     
-    // Check if tooltip goes off screen bottom
-    if (tipRect.bottom > window.innerHeight) {
-      tip.style.top = `${iconRect.top + window.scrollY - tipRect.height - 5}px`;
+    // Make sure it doesn't go off left edge
+    if (left < 10) {
+      left = 10;
     }
     
+    tip.style.top = `${top}px`;
+    tip.style.left = `${left}px`;
     tip.style.display = "block";
   };
   
@@ -130,24 +132,40 @@ function attachHelp(el, guidance) {
 
 async function explainField(el) {
   // Skip if already processed or being processed
-  if (el.dataset.guidanceAttached) return;
+  if (el.dataset.guidanceAttached) {
+    return;
+  }
+  
+  // Skip password fields and sensitive fields early
+  if (el.type === "password" || 
+      el.type === "submit" || 
+      el.type === "button" ||
+      el.name?.toLowerCase().includes("password") ||
+      el.name?.toLowerCase().includes("remember") ||
+      el.id?.toLowerCase().includes("password") ||
+      el.id?.toLowerCase().includes("remember")) {
+    el.dataset.guidanceAttached = "1"; // Mark but don't process
+    return;
+  }
   
   const user_language = await getUserLanguage();
   const cacheKey = `${user_language}_${getFieldCacheKey(el)}`;
   
   // Prevent duplicate processing
-  if (processingFields.has(cacheKey)) return;
+  if (processingFields.has(cacheKey)) {
+    return;
+  }
   processingFields.add(cacheKey);
-  
-  // Mark immediately to prevent reprocessing
-  el.dataset.guidanceAttached = "1";
   
   // Check cache first
   if (guidanceCache.has(cacheKey)) {
+    console.log("🟢 FormSaathi: Using cached guidance");
     attachHelp(el, guidanceCache.get(cacheKey));
     processingFields.delete(cacheKey);
     return;
   }
+  
+  console.log("🟢 FormSaathi: Making API request");
   
   const payload = {
     page_domain: DOMAIN,
@@ -171,7 +189,7 @@ async function explainField(el) {
       attachHelp(el, guidance);
     }
   } catch (error) {
-    console.error("FormSaathi: Error getting guidance", error);
+    console.error("FormSaathi: Error", error);
   } finally {
     processingFields.delete(cacheKey);
   }
@@ -188,7 +206,7 @@ function init() {
       }
     });
     
-    // Watch for new fields (debounced)
+    // Watch for new fields (debounced for better dynamic content detection)
     let timeout;
     const mo = new MutationObserver(() => {
       clearTimeout(timeout);
@@ -198,10 +216,21 @@ function init() {
             explainField(el);
           }
         });
-      }, 500); // Wait 500ms after last change
+      }, 300); // Shorter delay for faster response to tab/page changes
     });
     
-    mo.observe(document.body, { childList: true, subtree: true });
+    mo.observe(document.body, { childList: true, subtree: true, attributes: false });
+    
+    // Also check on visibility changes (for tabs/modals)
+    document.addEventListener('click', () => {
+      setTimeout(() => {
+        document.querySelectorAll("input, select, textarea").forEach(el => {
+          if (!el.dataset.guidanceAttached && el.offsetParent !== null) {
+            explainField(el);
+          }
+        });
+      }, 200);
+    }, true);
   });
 }
 
